@@ -33,5 +33,6 @@ app.UseCors();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapPremiEndpoints();
 
 app.Run();
