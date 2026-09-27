@@ -11,6 +11,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     } 
     
     public DbSet<User> Users {get; set;}
+    public DbSet<Premi> Premis {get; set;}
+    public DbSet<Installment> Installments {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

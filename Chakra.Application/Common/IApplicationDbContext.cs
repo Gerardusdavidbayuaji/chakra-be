@@ -6,5 +6,7 @@ namespace Chakra.Application.Common;
 public interface IApplicationDbContext
 {
     DbSet<User> Users { get; }
+    DbSet<Premi> Premis { get; }
+    DbSet<Installment> Installments { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
