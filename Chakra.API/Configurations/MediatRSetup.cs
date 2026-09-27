@@ -10,6 +10,7 @@ public static class MediatRSetup
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyReference).Assembly);
+            cfg.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationResultPipelineBehavior<,>));
         });
 
