@@ -15,6 +15,7 @@ public class Installment
     public DateTime? PaidAt { get; set; }
     public uint RowVersion { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     public Premi Premi { get; set; } = null!;
 }
