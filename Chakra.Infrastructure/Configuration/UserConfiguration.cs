@@ -11,11 +11,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("Users");
+        
         builder.HasKey(x => x.Id);
         
         builder.Property(x => x.Name).IsRequired().HasMaxLength(EfConstants.Length.Medium);
         
         builder.Property(x => x.Email).IsRequired().HasMaxLength(EfConstants.Length.Normal);
+        
         builder.HasIndex(x => x.Email).IsUnique();
         
         builder.Property(x => x.SupabaseAuthId).IsRequired(false);
@@ -24,6 +26,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.Property(x => x.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        
         builder.Property(x => x.UpdatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
