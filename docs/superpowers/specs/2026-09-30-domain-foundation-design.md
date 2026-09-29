@@ -48,7 +48,7 @@ public readonly record struct PremiId(Guid Value)
 }
 ```
 
-`DomainEvents` di-ignore oleh EF (bukan properti yang dipetakan, cukup expose sebagai property read-only dari field privat, di-`Ignore` di konfigurasi base atau convention).
+`Aggregate.DomainEvents` diberi atribut `[NotMapped]` (`System.ComponentModel.DataAnnotations.Schema`, bagian dari BCL) agar EF tidak mencoba memetakannya sebagai navigation.
 
 **Dependency baru:** `Chakra.Domain` menambah paket `MediatR.Contracts` (hanya interface, tanpa MediatR penuh).
 
