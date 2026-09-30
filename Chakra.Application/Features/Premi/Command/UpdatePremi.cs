@@ -6,6 +6,7 @@ using Chakra.Domain.Entities.Enums;
 using Chakra.Application.Mappers;
 using Chakra.Application.Common;
 using Chakra.Domain.Entities;
+using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Premi.Command;
 
@@ -30,9 +31,11 @@ public class UpdatePremiRequestHandler : IRequestHandler<UpdatePremiInput, Resul
 
     public async Task<Result<PremiResponseDto>> Handle(UpdatePremiInput request, CancellationToken cancellationToken)
     {
+        var premiId = new PremiId(request.Id);
+
         var premi = await _context.Premis
             .Include(p => p.Installments)
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == premiId, cancellationToken);
 
         if (premi == null)
             return Result<PremiResponseDto>.Failure("Premi not found.");
@@ -52,7 +55,6 @@ public class UpdatePremiRequestHandler : IRequestHandler<UpdatePremiInput, Resul
         premi.DueDay = request.DueDay;
         premi.GracePeriodDays = request.GracePeriodDays;
         premi.StartDate = request.StartDate;
-        premi.UpdatedAt = DateTime.UtcNow;
 
         _context.Installments.RemoveRange(premi.Installments);
         premi.Installments.Clear();
@@ -66,14 +68,13 @@ public class UpdatePremiRequestHandler : IRequestHandler<UpdatePremiInput, Resul
 
             premi.Installments.Add(new Installment
             {
-                Id = Guid.NewGuid(),
+                Id = InstallmentId.New(),
                 PremiId = premi.Id,
                 InstallmentNumber = i,
                 DueDate = dueDate,
                 Amount = installmentAmount,
                 Status = InstallmentStatus.Pending,
-                ReminderCount = 0,
-                CreatedAt = DateTime.UtcNow
+                ReminderCount = 0
             });
         }
 

@@ -8,6 +8,7 @@ using Chakra.Domain.Entities.Enums;
 using Chakra.Application.Mappers;
 using Chakra.Application.Common;
 using Chakra.Domain.Entities;
+using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Premi.Command;
 
@@ -56,7 +57,9 @@ public class CreatePremiRequestHandler : IRequestHandler<CreatePremiInput, Resul
 
     public async Task<Result<PremiResponseDto>> Handle(CreatePremiInput request, CancellationToken cancellationToken)
     {
-            var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId, cancellationToken);
+            var userId = new UserId(request.UserId);
+
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId, cancellationToken);
             if (!userExists) 
                 return Result<PremiResponseDto>.Failure("User not found");
 
@@ -64,17 +67,15 @@ public class CreatePremiRequestHandler : IRequestHandler<CreatePremiInput, Resul
 
             var premi = new PremiEntity
             {
-                Id = Guid.NewGuid(),
-                UserId = request.UserId,
+                Id = PremiId.New(),
+                UserId = userId,
                 TotalAmount = request.TotalAmount,
                 InstallmentAmount = installmentAmount,
                 Tenor = request.Tenor,
                 DueDay = request.DueDay,
                 GracePeriodDays = request.GracePeriodDays,
                 StartDate = request.StartDate,
-                Status = PremiStatus.Active,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                Status = PremiStatus.Active
             };
             
 
@@ -89,14 +90,13 @@ public class CreatePremiRequestHandler : IRequestHandler<CreatePremiInput, Resul
                 
                 premi.Installments.Add(new Installment
                 {
-                    Id = Guid.NewGuid(),
+                    Id = InstallmentId.New(),
                     PremiId = premi.Id,
                     InstallmentNumber = i,
                     DueDate = dueDate,
                     Amount = installmentAmount,
                     Status = InstallmentStatus.Pending,
-                    ReminderCount = 0,
-                    CreatedAt = DateTime.UtcNow,
+                    ReminderCount = 0
                 });
             }
             
