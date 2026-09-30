@@ -5,6 +5,7 @@ using Chakra.Application.Features.Premi.Dtos;
 using Chakra.Domain.Entities.Enums;
 using Chakra.Application.Common;
 using Chakra.Application.Mappers;
+using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Premi.Command;
 
@@ -21,8 +22,10 @@ public class CancelPremiRequestHandler : IRequestHandler<CancelPremiRequest, Res
 
     public async Task<Result<PremiResponseDto>> Handle(CancelPremiRequest request, CancellationToken cancellationToken)
     {
+        var premiId = new PremiId(request.Id);
+
         var premi = await _context.Premis
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == premiId, cancellationToken);
 
         if (premi == null)
             return Result<PremiResponseDto>.Failure("Premi not found.");
@@ -31,7 +34,6 @@ public class CancelPremiRequestHandler : IRequestHandler<CancelPremiRequest, Res
             return Result<PremiResponseDto>.Failure("Premi status is now cancelled.");
 
         premi.Status = PremiStatus.Cancelled;
-        premi.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
 
