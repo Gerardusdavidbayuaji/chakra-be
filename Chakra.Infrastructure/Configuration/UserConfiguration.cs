@@ -13,7 +13,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.ToTable("Users");
         
         builder.HasKey(x => x.Id);
-        
+
+        builder.Property(x => x.Id).ValueGeneratedNever();
+
         builder.Property(x => x.Name).IsRequired().HasMaxLength(EfConstants.Length.Medium);
         
         builder.Property(x => x.Email).IsRequired().HasMaxLength(EfConstants.Length.Normal);

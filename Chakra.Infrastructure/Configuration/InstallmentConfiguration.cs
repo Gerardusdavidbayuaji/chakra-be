@@ -13,6 +13,8 @@ public class InstallmentConfiguration : IEntityTypeConfiguration<Installment>
         
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Id).ValueGeneratedNever();
+
         builder.Property(x => x.InstallmentNumber).IsRequired();
 
         builder.Property(x => x.DueDate).IsRequired();
