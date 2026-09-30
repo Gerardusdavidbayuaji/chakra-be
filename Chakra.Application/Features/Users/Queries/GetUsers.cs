@@ -20,16 +20,20 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<List<U
     {
         var users = await _context.Users
             .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // Mapping di memori karena EF tidak bisa menerjemahkan .Value pada kolom ber-converter
+        var data = users
             .Select(u => new UserResponseDto
             {
-                Id = u.Id,
+                Id = u.Id.Value,
                 Name = u.Name,
                 Email = u.Email,
                 ChatId = u.ChatId,
                 CreatedAt = u.CreatedAt
             })
-            .ToListAsync(cancellationToken);
+            .ToList();
 
-        return Result<List<UserResponseDto>>.Success(users);
+        return Result<List<UserResponseDto>>.Success(data);
     }
 }
