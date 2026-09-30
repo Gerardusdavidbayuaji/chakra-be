@@ -5,6 +5,7 @@ using Mapster;
 using Chakra.Application.Features.Premi.Dtos;
 using Chakra.Domain.Entities.Enums;
 using Chakra.Application.Common;
+using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Premi.Queries;
 
@@ -21,10 +22,12 @@ public class GetPremiByIdQueryHandler : IRequestHandler<GetPremiByIdQuery, Resul
 
     public async Task<Result<PremiResponseDto>> Handle(GetPremiByIdQuery request, CancellationToken cancellationToken)
     {
+        var premiId = new PremiId(request.Id);
+
         var premi = await _context.Premis
             .AsNoTracking()
             .Include(p => p.Installments)
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == premiId, cancellationToken);
 
         if (premi == null)
             return Result<PremiResponseDto>.Failure("Premi not found.");
