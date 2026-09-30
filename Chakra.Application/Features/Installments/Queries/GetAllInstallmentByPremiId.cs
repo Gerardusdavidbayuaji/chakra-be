@@ -5,6 +5,7 @@ using MediatR;
 
 using Chakra.Application.Common;
 using Chakra.Application.Features.Installments.Dtos;
+using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Installments.Queries;
 
@@ -26,7 +27,9 @@ public class GetAllInstallmentByPremiIdQueryHandler
     public async Task<Result<PaginatedResult<InstallmentResponseDto>>> Handle(
         GetAllInstallmentByPremiIdQuery request, CancellationToken cancellationToken)
     {
-        var premiExists = await _context.Premis.AnyAsync(p => p.Id == request.PremiId, cancellationToken);
+        var premiId = new PremiId(request.PremiId);
+
+        var premiExists = await _context.Premis.AnyAsync(p => p.Id == premiId, cancellationToken);
         if (!premiExists)
             return Result<PaginatedResult<InstallmentResponseDto>>.Failure("Premi not  found.");
 
@@ -34,7 +37,7 @@ public class GetAllInstallmentByPremiIdQueryHandler
 
         var query = _context.Installments
             .AsNoTracking()
-            .Where(i => i.PremiId == request.PremiId)
+            .Where(i => i.PremiId == premiId)
             .ApplyFilteringAndOrdering(gridifyQuery);
 
         var count = await query.CountAsync(cancellationToken);
