@@ -17,7 +17,7 @@ public static class AuthEndpoint
 
                 return Results.Ok(new
                 {
-                    user.Id,
+                    Id = user.Id.Value,
                     user.Name,
                     user.Email,
                     user.SupabaseAuthId,
