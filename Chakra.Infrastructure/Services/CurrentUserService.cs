@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Chakra.Application.Common;
 using Chakra.Domain.Entities;
+using Chakra.Domain.Entities.Common;
 using Microsoft.AspNetCore.Http;
 
 namespace Chakra.Infrastructure.Services;
@@ -20,7 +21,7 @@ public class CurrentUserService : ICurrentUserService
     public string? Email =>
         _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
 
-    public Guid? DatabaseUserId => GetCurrentUser()?.Id;
+    public UserId? DatabaseUserId => GetCurrentUser()?.Id;
 
     public User? GetCurrentUser()
     {
