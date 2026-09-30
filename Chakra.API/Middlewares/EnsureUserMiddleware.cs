@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Chakra.Application.Common;
 using Chakra.Domain.Entities;
+using Chakra.Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Chakra.API.Middlewares;
@@ -32,13 +33,11 @@ public class EnsureUserMiddleware
 
                     user = new User
                     {
-                        Id = Guid.NewGuid(),
+                        Id = UserId.New(),
                         Name = name,
                         Email = email,
                         SupabaseAuthId = supabaseAuthId,
-                        ChatId = Guid.NewGuid(),
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        ChatId = Guid.NewGuid()
                     };
 
                     dbContext.Users.Add(user);
@@ -58,7 +57,6 @@ public class EnsureUserMiddleware
                 {
                     // User exists by email but doesn't have SupabaseAuthId yet — link it
                     user.SupabaseAuthId = supabaseAuthId;
-                    user.UpdatedAt = DateTime.UtcNow;
                     await dbContext.SaveChangesAsync();
                 }
 
