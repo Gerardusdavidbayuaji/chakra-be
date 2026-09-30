@@ -1,11 +1,11 @@
+using Chakra.Domain.Entities.Common;
 using Chakra.Domain.Entities.Enums;
 
 namespace Chakra.Domain.Entities;
 
-public class Installment
+public class Installment : Aggregate<InstallmentId>
 {
-    public Guid Id { get; set; }
-    public Guid PremiId { get; set; }
+    public PremiId PremiId { get; set; }
     public int InstallmentNumber { get; set; }
     public DateOnly DueDate { get; set; }
     public decimal Amount { get; set; }
@@ -14,8 +14,6 @@ public class Installment
     public string? MidtransOrderId { get; set; }
     public DateTime? PaidAt { get; set; }
     public uint RowVersion { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
 
     public Premi Premi { get; set; } = null!;
 }
