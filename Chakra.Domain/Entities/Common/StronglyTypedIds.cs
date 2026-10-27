@@ -17,3 +17,10 @@ public readonly record struct InstallmentId(Guid Value)
     public static InstallmentId New() => new(Guid.CreateVersion7());
     public override string ToString() => Value.ToString();
 }
+
+public readonly record struct OutboxMessageId(Guid Value)
+{
+    public static OutboxMessageId New() => new(Guid.CreateVersion7());
+    public override string ToString() => Value.ToString();
+}
+
