@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users {get; set;}
     public DbSet<Premi> Premis {get; set;}
     public DbSet<Installment> Installments {get; set;}
+    public DbSet<OutboxMessage> OutboxMessage {get; set;}
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -23,6 +24,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         configurationBuilder.Properties<UserId>().HaveConversion<UserIdConverter>();
         configurationBuilder.Properties<PremiId>().HaveConversion<PremiIdConverter>();
         configurationBuilder.Properties<InstallmentId>().HaveConversion<InstallmentIdConverter>();
+        configurationBuilder.Properties<OutboxMessageId>().HaveConversion<OutboxMessageIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
