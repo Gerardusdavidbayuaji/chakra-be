@@ -8,5 +8,6 @@ public interface IApplicationDbContext
     DbSet<User> Users { get; }
     DbSet<Premi> Premis { get; }
     DbSet<Installment> Installments { get; }
+    DbSet<OutboxMessage> OutboxMessage { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -29,7 +29,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<List<U
                 Id = u.Id.Value,
                 Name = u.Name,
                 Email = u.Email,
-                ChatId = u.ChatId,
+                TelegramChatId = u.TelegramChatId,
                 CreatedAt = u.CreatedAt
             })
             .ToList();
