@@ -21,7 +21,7 @@ public static class AuthEndpoint
                     user.Name,
                     user.Email,
                     user.SupabaseAuthId,
-                    user.ChatId,
+                    user.TelegramChatId,
                     user.CreatedAt
                 });
             })
