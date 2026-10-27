@@ -23,8 +23,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(x => x.Email).IsUnique();
         
         builder.Property(x => x.SupabaseAuthId).IsRequired(false);
+
+        builder.Property(x => x.TelegramLinkTokenHash).HasMaxLength(64);
         
-        builder.Property(x => x.ChatId).HasMaxLength(EfConstants.Length.Normal);
+        builder.HasIndex(x => x.TelegramLinkTokenHash).IsUnique().HasFilter("\"TelegramLinkTokenHash\" IS NOT NULL");
         
         builder.Property(x => x.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");

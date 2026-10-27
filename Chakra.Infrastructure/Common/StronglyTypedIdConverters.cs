@@ -23,3 +23,10 @@ public sealed class InstallmentIdConverter : ValueConverter<InstallmentId, Guid>
     {
     }
 }
+
+public sealed class OutboxMessageIdConverter : ValueConverter<OutboxMessageId, Guid>
+{
+    public OutboxMessageIdConverter() : base(id => id.Value, value => new OutboxMessageId(value))
+    {
+    }
+}
