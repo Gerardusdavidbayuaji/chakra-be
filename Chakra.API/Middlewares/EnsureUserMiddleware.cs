@@ -36,8 +36,7 @@ public class EnsureUserMiddleware
                         Id = UserId.New(),
                         Name = name,
                         Email = email,
-                        SupabaseAuthId = supabaseAuthId,
-                        ChatId = Guid.NewGuid()
+                        SupabaseAuthId = supabaseAuthId
                     };
 
                     dbContext.Users.Add(user);
