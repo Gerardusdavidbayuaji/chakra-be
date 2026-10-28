@@ -17,7 +17,8 @@ builder.Services
     .AddValidationSetup()
     .AddApplicationSetup(builder.Configuration)
     .AddOpenApiSetup()
-    .AddAuthSetup(builder.Configuration);
+    .AddAuthSetup(builder.Configuration)
+    .AddNotificationSetup(builder.Configuration);
 
 var app = builder.Build();
 
