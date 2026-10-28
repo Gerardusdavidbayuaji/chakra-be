@@ -25,7 +25,6 @@ namespace Chakra.Infrastructure.Migrations
             modelBuilder.Entity("Chakra.Domain.Entities.Installment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
@@ -87,10 +86,54 @@ namespace Chakra.Infrastructure.Migrations
                     b.ToTable("Installments", (string)null);
                 });
 
+            modelBuilder.Entity("Chakra.Domain.Entities.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsProcessed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasFilter("\"IsProcessed\" = false");
+
+                    b.ToTable("OutboxMessages", (string)null);
+                });
+
             modelBuilder.Entity("Chakra.Domain.Entities.Premi", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -127,17 +170,12 @@ namespace Chakra.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Premis");
+                    b.ToTable("Premis", (string)null);
                 });
 
             modelBuilder.Entity("Chakra.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ChatId")
-                        .HasMaxLength(100)
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -158,6 +196,16 @@ namespace Chakra.Infrastructure.Migrations
                     b.Property<string>("SupabaseAuthId")
                         .HasColumnType("text");
 
+                    b.Property<long?>("TelegramChatId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("TelegramLinkTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TelegramLinkTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -167,6 +215,10 @@ namespace Chakra.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("TelegramLinkTokenHash")
+                        .IsUnique()
+                        .HasFilter("\"TelegramLinkTokenHash\" IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
                 });
