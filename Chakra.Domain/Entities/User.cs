@@ -7,9 +7,9 @@ public class User : AuditableEntity<UserId>
     public required string Name { get; set; }
     public required string Email { get; set; }
     public string? SupabaseAuthId { get; set; }
-    public long? TelegramChatId { get; set; } // diisi saat user menekan Start di bot lewat deep link
-    public string? TelegramLinkTokenHash { get; set; } // SHA-256 hex dari token deep link, token asli tidak disimpan
-    public DateTime? TelegramLinkTokenExpiresAt { get; set; }
+    public long? TelegramChatId { get; private set; } // diisi saat user menekan Start di bot lewat deep link
+    public string? TelegramLinkTokenHash { get; private set; } // SHA-256 hex dari token deep link, token asli tidak disimpan
+    public DateTime? TelegramLinkTokenExpiresAt { get; private set; }
 
     public void SetTelegramLinkToken(string tokenHash, DateTime expiresAt)
     {
