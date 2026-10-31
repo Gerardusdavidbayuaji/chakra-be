@@ -15,7 +15,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users {get; set;}
     public DbSet<Premi> Premis {get; set;}
     public DbSet<Installment> Installments {get; set;}
-    public DbSet<OutboxMessage> OutboxMessage {get; set;}
+    public DbSet<OutboxMessage> OutboxMessages {get; set;}
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
