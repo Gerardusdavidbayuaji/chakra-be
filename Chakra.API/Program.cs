@@ -36,5 +36,6 @@ app.MapInstallmentEndpoints();
 app.MapPremiEndpoints();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapTelegramEndpoints();
 
 app.Run();
