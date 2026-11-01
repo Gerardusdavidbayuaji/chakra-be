@@ -38,4 +38,7 @@ app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapTelegramEndpoints();
 
+if (app.Environment.IsDevelopment())
+    app.MapOutboxEndpoints();
+
 app.Run();
