@@ -20,7 +20,7 @@ public class ProcessTelegramWebhookCommandHandler : IRequestHandler<ProcessTeleg
 {
     private const string StartCommand = "/start ";
     private const string LinkedMessage =
-        "Akun Chakra kamu berhasil terhubung dengan Telegram. Notifikasi cicilan akan dikirim ke sini.";
+        "Akun Solace kamu berhasil terhubung dengan Telegram. Notifikasi cicilan akan dikirim ke sini.";
 
     private readonly IApplicationDbContext _context;
     private readonly TelegramSettings _settings;
