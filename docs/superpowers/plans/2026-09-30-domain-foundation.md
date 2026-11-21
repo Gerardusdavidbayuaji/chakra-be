@@ -1063,7 +1063,7 @@ Memverifikasi kontrak API tidak berubah dan interceptor bekerja di aplikasi nyat
 
 - [ ] **Step 1: Jalankan API**
 
-Run (background): `dotnet run --project Chakra.API --launch-profile http`
+Run (background): `dotnet run --project Chakra.API --launch-profile "Chakra.API: Development"`
 Jika nama profile berbeda, cek `Chakra.API/Properties/launchSettings.json`; profile Development memakai `http://localhost:5277`.
 Expected: log `Now listening on: http://localhost:5277` tanpa exception startup.
 
