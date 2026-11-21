@@ -18,8 +18,10 @@ public class TelegramClient : ITelegramClient
 
     public async Task SendMessageAsync(long chatId, string text, CancellationToken cancellationToken = default)
     {
+        // Awalan "./" wajib: token berformat "<id>:<secret>", tanpa awalan ini "bot<id>:..." dibaca
+        // sebagai URI absolut dengan scheme "bot<id>" sehingga BaseAddress diabaikan
         using var response = await _httpClient.PostAsJsonAsync(
-            $"bot{_settings.BotToken}/sendMessage",
+            $"./bot{_settings.BotToken}/sendMessage",
             new { chat_id = chatId, text },
             cancellationToken);
 
