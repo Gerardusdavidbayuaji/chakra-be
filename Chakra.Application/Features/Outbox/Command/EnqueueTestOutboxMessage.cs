@@ -20,7 +20,7 @@ public class EnqueueTestOutboxMessageValidator : AbstractValidator<EnqueueTestOu
 
         RuleFor(x => x.Text)
             .NotEmpty().WithMessage("Text is required")
-            .MaximumLength(4096).WithMessage("Text must be at most 4096 characters");
+            .MaximumLength(4096).WithMessage("Text must be at most 4000 characters");
     }
 }
 
