@@ -9,16 +9,18 @@ using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Installments.Queries;
 
-public record GetInstallmentByIdQuery(Guid Id) : IRequest<Result<InstallmentResponseDto>>;
+public record GetInstallmentByIdQuery(Guid Id) : IAuthorizedRequest<Result<InstallmentResponseDto>>;
 
 public class GetInstallmentByIdQueryHandler
     : IRequestHandler<GetInstallmentByIdQuery, Result<InstallmentResponseDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public GetInstallmentByIdQueryHandler(IApplicationDbContext context)
+    public GetInstallmentByIdQueryHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<InstallmentResponseDto>> Handle(
@@ -28,10 +30,13 @@ public class GetInstallmentByIdQueryHandler
 
         var installment = await _context.Installments
             .AsNoTracking()
+            .Include(i => i.Premi)
             .FirstOrDefaultAsync(i => i.Id == installmentId, cancellationToken);
 
-        if (installment == null)
-            return Result<InstallmentResponseDto>.Failure("Installment not found.");
+        // Cicilan milik orang lain dijawab sama dengan tidak ada
+        if (installment == null
+            || (!_currentUser.IsAdmin && installment.Premi.UserId != _currentUser.DatabaseUserId))
+            return Result<InstallmentResponseDto>.NotFound("Installment not found.");
 
         return Result<InstallmentResponseDto>.Success(installment.ToResponseDto());
     }

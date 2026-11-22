@@ -9,7 +9,7 @@ using Chakra.Domain.Entities.Common;
 
 namespace Chakra.Application.Features.Installments.Queries;
 
-public class GetAllInstallmentByPremiIdQuery : PaginatedRequest, IRequest<Result<PaginatedResult<InstallmentResponseDto>>>
+public class GetAllInstallmentByPremiIdQuery : PaginatedRequest, IAuthorizedRequest<Result<PaginatedResult<InstallmentResponseDto>>>
 {
     public Guid PremiId { get; set; }
 }
@@ -18,20 +18,26 @@ public class GetAllInstallmentByPremiIdQueryHandler
     : IRequestHandler<GetAllInstallmentByPremiIdQuery, Result<PaginatedResult<InstallmentResponseDto>>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public GetAllInstallmentByPremiIdQueryHandler(IApplicationDbContext context)
+    public GetAllInstallmentByPremiIdQueryHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<PaginatedResult<InstallmentResponseDto>>> Handle(
         GetAllInstallmentByPremiIdQuery request, CancellationToken cancellationToken)
     {
         var premiId = new PremiId(request.PremiId);
+        var isAdmin = _currentUser.IsAdmin;
+        var userId = _currentUser.DatabaseUserId!.Value;
 
-        var premiExists = await _context.Premis.AnyAsync(p => p.Id == premiId, cancellationToken);
-        if (!premiExists)
-            return Result<PaginatedResult<InstallmentResponseDto>>.Failure("Premi not  found.");
+        // Premi milik orang lain dijawab sama dengan tidak ada
+        var premiVisible = await _context.Premis
+            .AnyAsync(p => p.Id == premiId && (isAdmin || p.UserId == userId), cancellationToken);
+        if (!premiVisible)
+            return Result<PaginatedResult<InstallmentResponseDto>>.NotFound("Premi not found.");
 
         var gridifyQuery = request.ToGridifyQuery();
 
