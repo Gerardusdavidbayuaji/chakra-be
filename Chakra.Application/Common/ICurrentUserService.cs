@@ -8,5 +8,6 @@ public interface ICurrentUserService
     string? SupabaseAuthId { get; }
     string? Email { get; }
     UserId? DatabaseUserId { get; }
+    bool IsAdmin { get; }
     User? GetCurrentUser();
 }
