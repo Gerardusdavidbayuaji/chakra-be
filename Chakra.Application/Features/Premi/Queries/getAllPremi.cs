@@ -8,24 +8,37 @@ using Chakra.Application.Common;
 
 namespace Chakra.Application.Features.Premi.Queries;
 
-public class GetAllPremiQuery : PaginatedRequest, IRequest<Result<PaginatedResult<PremiResponseDto>>>;
+public class GetAllPremiQuery : PaginatedRequest, IAuthorizedRequest<Result<PaginatedResult<PremiResponseDto>>>;
 
 public class GetAllPremiQueryHandler : IRequestHandler<GetAllPremiQuery, Result<PaginatedResult<PremiResponseDto>>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public GetAllPremiQueryHandler(IApplicationDbContext context)
+    public GetAllPremiQueryHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<PaginatedResult<PremiResponseDto>>> Handle(GetAllPremiQuery request, CancellationToken cancellationToken)
     {
         var gridifyQuery = request.ToGridifyQuery();
 
+        // Cicilan dimuat agar ringkasan (InstallmentsPaid, RemainingAmount, NextDueDate) terisi
         var query = _context.Premis
             .AsNoTracking()
-            .ApplyFilteringAndOrdering(gridifyQuery);
+            .Include(p => p.Installments)
+            .AsQueryable();
+
+        if (!_currentUser.IsAdmin)
+        {
+            // Non-null: AuthorizationBehavior sudah menolak request tanpa login
+            var userId = _currentUser.DatabaseUserId!.Value;
+            query = query.Where(p => p.UserId == userId);
+        }
+
+        query = query.ApplyFilteringAndOrdering(gridifyQuery);
 
         var count = await query.CountAsync(cancellationToken);
 
