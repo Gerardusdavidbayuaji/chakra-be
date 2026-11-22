@@ -193,6 +193,13 @@ namespace Chakra.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("User");
+
                     b.Property<string>("SupabaseAuthId")
                         .HasColumnType("text");
 
