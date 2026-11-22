@@ -6,5 +6,6 @@ public enum InstallmentStatus
     Reminder1,
     Reminder2,
     Paid,
-    Overdue
+    Overdue,
+    Cancelled
 }
