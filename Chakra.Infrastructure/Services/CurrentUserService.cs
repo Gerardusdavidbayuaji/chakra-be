@@ -23,6 +23,8 @@ public class CurrentUserService : ICurrentUserService
 
     public UserId? DatabaseUserId => GetCurrentUser()?.Id;
 
+    public bool IsAdmin => GetCurrentUser()?.IsAdmin == true;
+
     public User? GetCurrentUser()
     {
         var httpContext = _httpContextAccessor.HttpContext;
