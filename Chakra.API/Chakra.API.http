@@ -1,6 +1,105 @@
-@Chakra.API_HostAddress = http://localhost:5235
+@Chakra.API_HostAddress = http://localhost:5277
 
-GET {{Chakra.API_HostAddress}}/weatherforecast/
-Accept: application/json
+# Isi token JWT Supabase dan id dari response sebelumnya
+@adminToken = <jwt admin>
+@userToken = <jwt user biasa>
+@userId = <guid user pemilik premi>
+@premiId = <guid premi>
+@installmentId = <guid cicilan>
+@otherPremiId = <guid premi milik user lain>
+@otherInstallmentId = <guid cicilan milik user lain>
 
-###
+### 1. Admin buat premi: 12.000.000 / 7, cicilan 1 jatuh tempo 15 Jan 2027
+POST {{Chakra.API_HostAddress}}/api/premi
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "totalAmount": 12000000,
+  "tenor": 7,
+  "dueDay": 15,
+  "gracePeriodDays": 7,
+  "startDate": "2027-01-15"
+}
+
+### 1b. Jadwal cicilan (1-6 = 1.714.285, 7 = 1.714.290)
+GET {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/installments
+Authorization: Bearer {{adminToken}}
+
+### 2. DueDay 31: harus 31 Jan, 28 Feb, 31 Mar 2027
+POST {{Chakra.API_HostAddress}}/api/premi
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "totalAmount": 300000,
+  "tenor": 3,
+  "dueDay": 31,
+  "gracePeriodDays": 7,
+  "startDate": "2027-01-31"
+}
+
+### 3a. Total lebih kecil dari tenor -> 400
+POST {{Chakra.API_HostAddress}}/api/premi
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "totalAmount": 5,
+  "tenor": 12,
+  "dueDay": 15,
+  "gracePeriodDays": 7,
+  "startDate": "2027-01-15"
+}
+
+### 3b. Total bukan rupiah bulat -> 400
+POST {{Chakra.API_HostAddress}}/api/premi
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "totalAmount": 1000000.50,
+  "tenor": 12,
+  "dueDay": 15,
+  "gracePeriodDays": 7,
+  "startDate": "2027-01-15"
+}
+
+### 4-7. Bayar cicilan (urutan, bayar ulang, sampai lunas)
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId}}/pay
+Authorization: Bearer {{adminToken}}
+
+### 7. Detail premi: Status, RemainingAmount, NextDueDate
+GET {{Chakra.API_HostAddress}}/api/premi/{{premiId}}
+Authorization: Bearer {{adminToken}}
+
+### 8-9. Cancel premi
+PATCH {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/cancel
+Authorization: Bearer {{adminToken}}
+
+### 10. User biasa bayar -> 403
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId}}/pay
+Authorization: Bearer {{userToken}}
+
+### 10b. User biasa cancel -> 403
+PATCH {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/cancel
+Authorization: Bearer {{userToken}}
+
+### 11. User biasa: hanya premi miliknya
+GET {{Chakra.API_HostAddress}}/api/premi
+Authorization: Bearer {{userToken}}
+
+### 12. User biasa: premi orang lain -> 404
+GET {{Chakra.API_HostAddress}}/api/premi/{{otherPremiId}}
+Authorization: Bearer {{userToken}}
+
+### 12b. User biasa: cicilan orang lain -> 404
+GET {{Chakra.API_HostAddress}}/api/installments/{{otherInstallmentId}}
+Authorization: Bearer {{userToken}}
+
+### 13. Tanpa token -> 401
+GET {{Chakra.API_HostAddress}}/api/premi
