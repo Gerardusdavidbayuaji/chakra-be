@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Chakra.Infrastructure.Common;
 using Chakra.Domain.Entities;
+using Chakra.Domain.Entities.Enums;
 
 namespace Chakra.Infrastructure.Configuration;
 
@@ -23,6 +24,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(x => x.Email).IsUnique();
         
         builder.Property(x => x.SupabaseAuthId).IsRequired(false);
+
+        builder.Property(x => x.Role)
+            .HasConversion<string>()
+            .HasMaxLength(EfConstants.Length.Short)
+            .HasDefaultValue(UserRole.User)
+            .IsRequired();
+
+        builder.Ignore(x => x.IsAdmin);
 
         builder.Property(x => x.TelegramLinkTokenHash).HasMaxLength(64);
         
