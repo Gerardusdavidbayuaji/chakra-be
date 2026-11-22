@@ -2,14 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 
 using Chakra.Application.Features.Premi.Dtos;
-using Chakra.Domain.Entities.Enums;
 using Chakra.Application.Common;
 using Chakra.Application.Mappers;
 using Chakra.Domain.Entities.Common;
+using Chakra.Domain.Exceptions;
 
 namespace Chakra.Application.Features.Premi.Command;
 
-public record CancelPremiRequest(Guid Id) : IAuthorizedRequest<Result<PremiResponseDto>>;
+public record CancelPremiRequest(Guid Id) : IAdminRequest<Result<PremiResponseDto>>;
 
 public class CancelPremiRequestHandler : IRequestHandler<CancelPremiRequest, Result<PremiResponseDto>>
 {
@@ -25,17 +25,29 @@ public class CancelPremiRequestHandler : IRequestHandler<CancelPremiRequest, Res
         var premiId = new PremiId(request.Id);
 
         var premi = await _context.Premis
+            .Include(p => p.Installments)
             .FirstOrDefaultAsync(p => p.Id == premiId, cancellationToken);
 
         if (premi == null)
-            return Result<PremiResponseDto>.Failure("Premi not found.");
+            return Result<PremiResponseDto>.NotFound("Premi not found.");
 
-        if (premi.Status == PremiStatus.Cancelled)
-            return Result<PremiResponseDto>.Failure("Premi status is now cancelled.");
+        try
+        {
+            premi.Cancel();
+        }
+        catch (DomainException ex)
+        {
+            return Result<PremiResponseDto>.Failure(ex.Message);
+        }
 
-        premi.Status = PremiStatus.Cancelled;
-
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result<PremiResponseDto>.Failure("Premi was modified by another request, please retry.");
+        }
 
         return Result<PremiResponseDto>.Success(premi.ToResponseDto());
     }
