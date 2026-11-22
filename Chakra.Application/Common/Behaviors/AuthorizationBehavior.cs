@@ -22,8 +22,8 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             var responseType = typeof(TResponse);
             if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<>))
             {
-                var failureMethod = responseType.GetMethod(nameof(Result<object>.Failure))!;
-                return (TResponse)failureMethod.Invoke(null, new object[] { "Unauthorized" })!;
+                var unauthorizedMethod = responseType.GetMethod(nameof(Result<object>.Unauthorized))!;
+                return (TResponse)unauthorizedMethod.Invoke(null, new object[] { "Unauthorized" })!;
             }
 
             throw new UnauthorizedAccessException("User is not authenticated.");
