@@ -6,7 +6,10 @@ public static class OpenApiSetup
 {
     public static IServiceCollection AddOpenApiSetup(this IServiceCollection services)
     {
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+        });
         return services;
     }
 
