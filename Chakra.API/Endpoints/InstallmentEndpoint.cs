@@ -1,6 +1,7 @@
 using Chakra.Application.Common;
 using Chakra.Application.Features.Installments.Command;
 using Chakra.Application.Features.Installments.Queries;
+using Chakra.Application.Features.Payments.Command;
 using MediatR;
 
 namespace Chakra.API.Endpoints;
@@ -40,5 +41,15 @@ public static class InstallmentEndpoint
                     : result.ToErrorResult();
             })
             .WithName("Pay Installment");
+
+        // Pemilik atau admin: buat (atau pakai ulang) link pembayaran Midtrans
+        group.MapPost("/installments/{id:guid}/payment-link", async (Guid id, IMediator mediator) =>
+            {
+                var result = await mediator.Send(new CreatePaymentLinkCommand(id));
+                return result.IsSuccess
+                    ? Results.Ok(ApiResponse<object>.Success(result.Data!, 200, "Payment link created successfully"))
+                    : result.ToErrorResult();
+            })
+            .WithName("Create Payment Link");
     }
 }

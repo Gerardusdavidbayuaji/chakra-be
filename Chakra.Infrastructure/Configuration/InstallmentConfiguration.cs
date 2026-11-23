@@ -31,6 +31,9 @@ public class InstallmentConfiguration : IEntityTypeConfiguration<Installment>
         builder.Property(x => x.ReminderCount)
             .HasDefaultValue(0);
 
+        builder.Property(x => x.LastRemindedOn).HasColumnType("date");
+        builder.Property(x => x.OverdueAlertSentOn).HasColumnType("date");
+
         builder.Property(x => x.MidtransOrderId)
             .HasMaxLength(EfConstants.Length.Long);
 
@@ -53,6 +56,9 @@ public class InstallmentConfiguration : IEntityTypeConfiguration<Installment>
 
         builder.HasIndex(x => new { x.PremiId, x.InstallmentNumber })
             .IsUnique();
+
+        // Query kandidat job pengingat
+        builder.HasIndex(x => new { x.Status, x.DueDate });
 
         builder.Property(x => x.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
