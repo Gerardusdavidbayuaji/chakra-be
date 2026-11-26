@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using FluentValidation;
 using MediatR;
 
@@ -49,10 +50,12 @@ public class UpdatePremiValidator : AbstractValidator<UpdatePremiInput>
 public class UpdatePremiRequestHandler : IRequestHandler<UpdatePremiInput, Result<PremiResponseDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ILogger<UpdatePremiRequestHandler> _logger;
 
-    public UpdatePremiRequestHandler(IApplicationDbContext context)
+    public UpdatePremiRequestHandler(IApplicationDbContext context, ILogger<UpdatePremiRequestHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Result<PremiResponseDto>> Handle(UpdatePremiInput request, CancellationToken cancellationToken)
@@ -84,6 +87,11 @@ public class UpdatePremiRequestHandler : IRequestHandler<UpdatePremiInput, Resul
         catch (DbUpdateConcurrencyException)
         {
             return Result<PremiResponseDto>.Failure("Premi was modified by another request, please retry.");
+        }
+        catch (DbUpdateException ex) when (ex is not DbUpdateConcurrencyException)
+        {
+            _logger.LogError(ex, "Failed to update premi {PremiId}", request.Id);
+            return Result<PremiResponseDto>.Failure("Premi cannot be changed because payment links have been created.");
         }
 
         return Result<PremiResponseDto>.Success(premi.ToResponseDto());

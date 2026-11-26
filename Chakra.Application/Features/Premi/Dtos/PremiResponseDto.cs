@@ -18,4 +18,5 @@ public class PremiResponseDto
     public int InstallmentsPaid { get; set; }
     public decimal RemainingAmount { get; set; }
     public DateOnly? NextDueDate { get; set; }
+    public bool RemindersPaused { get; set; }
 }
