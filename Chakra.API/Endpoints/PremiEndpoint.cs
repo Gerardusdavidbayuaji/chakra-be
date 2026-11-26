@@ -80,5 +80,23 @@ public static class PremiEndpoint
                 : result.ToErrorResult();
         })
         .WithName("Cancel Premi");
+
+        group.MapPost("/{id:guid}/reminders/pause", async (Guid id, IMediator mediator) =>
+        {
+            var result = await mediator.Send(new PauseRemindersCommand(id));
+            return result.IsSuccess
+                ? Results.Ok(ApiResponse<object>.Success(result.Data!, 200, "Reminders paused successfully"))
+                : result.ToErrorResult();
+        })
+        .WithName("Pause Premi Reminders");
+
+        group.MapPost("/{id:guid}/reminders/resume", async (Guid id, IMediator mediator) =>
+        {
+            var result = await mediator.Send(new ResumeRemindersCommand(id));
+            return result.IsSuccess
+                ? Results.Ok(ApiResponse<object>.Success(result.Data!, 200, "Reminders resumed successfully"))
+                : result.ToErrorResult();
+        })
+        .WithName("Resume Premi Reminders");
     }
 }
