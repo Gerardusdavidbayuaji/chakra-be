@@ -21,5 +21,13 @@ public class PremiConfiguration : IEntityTypeConfiguration<Premi>
         builder.Ignore(x => x.InstallmentsPaid);
         builder.Ignore(x => x.RemainingAmount);
         builder.Ignore(x => x.NextDueDate);
+
+        builder.Property(x => x.RemindersPaused)
+            .HasDefaultValue(false);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.RemindersPausedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
