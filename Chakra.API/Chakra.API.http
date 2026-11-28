@@ -1,7 +1,7 @@
 @Chakra.API_HostAddress = http://localhost:5277
 
 # Isi token JWT Supabase dan id dari response sebelumnya
-@adminToken = <jwt admin>
+@adminToken = <eyJhbGciOiJFUzI1NiIsImtpZCI6IjEwZDZkNjk2LTNiZmQtNDkzZS1hODVkLTg2MDk5ZWE5NzBiMSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2lvYWNwc2tjcWZ5d2h1Y255eXNhLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI2YjIzOWQyYS01ODM2LTQ1OWQtYjQ4ZC1lMGY5M2ZmOTJlYTAiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzk1MzM1MzUyLCJpYXQiOjE3OTUzMzE3NTIsImVtYWlsIjoiYWRtaW5zb2xhY2VAbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc5NTMzMTc1Mn1dLCJzZXNzaW9uX2lkIjoiZjUxZmUwN2YtOWVkOS00ZTEyLWEwN2YtYjRmYzMxMzFmNTFmIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.erGtXdVmr8sZQYX1yPnbJ40YGxvnGMpO3daYzXR3XsgcxKnNQZdQZbw1NL4fncWDY22eEoDUfRO25q_uHvKfAw>
 @userToken = <jwt user biasa>
 @userId = <guid user pemilik premi>
 @premiId = <guid premi>
@@ -103,3 +103,218 @@ Authorization: Bearer {{userToken}}
 
 ### 13. Tanpa token -> 401
 GET {{Chakra.API_HostAddress}}/api/premi
+
+### Midtrans
+# Persiapan: tunnel aktif, Notification URL sandbox terpasang, user & admin sudah link Telegram.
+# Bayar lewat simulator: https://simulator.sandbox.midtrans.com
+@installmentId2 = <guid cicilan 2 (premi yang sama)>
+@installmentId3 = <guid cicilan 3 (premi yang sama)>
+@premiIdB = <guid premi B (skenario 7, akan di-cancel)>
+@installmentIdPremiB = <guid cicilan di premi B (skenario 7)>
+@installmentIdPremiC = <guid cicilan N di premi C yang aktif (skenario 8)>
+@paymentId = <guid payment transaction dari GET /api/payments/unapplied>
+
+### M1. User minta link bayar cicilan 1 -> 200 { orderId, redirectUrl/token }
+# Manual: buka redirectUrl, pilih BCA VA, bayar di simulator.
+# Harapan: cicilan Paid (MidtransOrderId = order), transaksi Paid, Telegram "Pembayaran cicilan ke-1 sebesar Rp... berhasil."
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M1b. Cek cicilan setelah bayar -> Paid
+GET {{Chakra.API_HostAddress}}/api/installments/{{installmentId}}
+Authorization: Bearer {{userToken}}
+
+### M2. Minta link cicilan 2 dua kali -> orderId sama (jalankan 2x)
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId2}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M3. Minta link cicilan 3 saat cicilan 2 belum lunas -> 400 "Previous installments must be paid first."
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId3}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M4. Kirim ulang notifikasi (idempotensi)
+# Manual: di dashboard sandbox Midtrans, resend notifikasi transaksi skenario 1.
+# Harapan: 200, tidak ada perubahan data, tidak ada Telegram kedua.
+
+### M5. Notifikasi palsu dengan signature_key asal -> 401
+POST {{Chakra.API_HostAddress}}/api/midtrans/notification
+Content-Type: application/json
+
+{
+  "order_id": "INST-FAKE-ORDER",
+  "status_code": "200",
+  "gross_amount": "1714285.00",
+  "signature_key": "signature-asal-asalan",
+  "transaction_status": "settlement",
+  "fraud_status": "accept"
+}
+
+### M6. Link tanpa pilih metode bayar, lalu admin bayar manual cicilan 2
+# Langkah 1: buat link cicilan 2 (jangan buka/pilih metode bayar)
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId2}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M6b. Langkah 2: admin bayar manual cicilan 2 -> 200
+# Harapan: transaksi jadi Expired dalam +-60 detik (expire dibalas 404 tetap dianggap sukses).
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentId2}}/pay
+Authorization: Bearer {{adminToken}}
+
+### M7. Premi B: buat link
+# Manual: buka redirectUrl, pilih VA di simulator, JANGAN bayar dulu.
+# Harapan: 200 + link; transaksi Pending.
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentIdPremiB}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M7b. Admin cancel premi B, lalu bayar VA di simulator
+# Harapan: jika expire sudah jalan simulator menolak. Jika lolos: transaksi Unapplied(PremiNotActive) + Telegram ke admin.
+PATCH {{Chakra.API_HostAddress}}/api/premi/{{premiIdB}}/cancel
+Authorization: Bearer {{adminToken}}
+
+### M7c. Allocate pada premi tidak aktif -> 400 "Premi is not active, this payment can only be refunded."
+POST {{Chakra.API_HostAddress}}/api/payments/{{paymentId}}/allocate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "note": "coba alokasi"
+}
+
+### M7d. Refund -> 200, transaksi Refunded
+POST {{Chakra.API_HostAddress}}/api/payments/{{paymentId}}/refund
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reference": "TRF-001",
+  "note": "refund manual"
+}
+
+### M8. Premi aktif: buat link cicilan N, pilih VA
+# Langkah: (1) request link di bawah, pilih VA di simulator tanpa bayar,
+# (2) admin bayar manual cicilan N SEBELUM expire jalan (M8b), (3) bayar VA di simulator.
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentIdPremiC}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### M8b. Admin bayar manual cicilan N -> 200
+POST {{Chakra.API_HostAddress}}/api/installments/{{installmentIdPremiC}}/pay
+Authorization: Bearer {{adminToken}}
+
+### M8c. Setelah bayar VA: daftar unapplied (admin) -> transaksi Unapplied(InstallmentAlreadyPaid), canAllocate: true
+GET {{Chakra.API_HostAddress}}/api/payments/unapplied
+Authorization: Bearer {{adminToken}}
+
+### M8d. Allocate -> cicilan N+1 Paid dengan PaidAt = waktu bayar VA
+# PENTING: set ulang @paymentId dari GET /api/payments/unapplied (M8c), jangan pakai nilai skenario 7.
+POST {{Chakra.API_HostAddress}}/api/payments/{{paymentId}}/allocate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "note": "alokasi ke cicilan berikutnya"
+}
+
+### M9. User biasa lihat unapplied -> 403
+GET {{Chakra.API_HostAddress}}/api/payments/unapplied
+Authorization: Bearer {{userToken}}
+
+### M10. User biasa minta link cicilan milik orang lain -> 404
+POST {{Chakra.API_HostAddress}}/api/installments/{{otherInstallmentId}}/payment-link
+Authorization: Bearer {{userToken}}
+
+### Scheduler
+# Persiapan: premi jatuh tempo 15 Jan 2027, GracePeriodDays 7, user sudah link Telegram.
+# Endpoint run hanya ada di Development, hanya admin. Efeknya nyata (transaksi Snap + pesan Telegram sungguhan).
+@runDate = 2027-01-12
+
+### S0. Run tanpa date -> 400 "Query parameter 'date' (yyyy-MM-dd) is required."
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run
+Authorization: Bearer {{adminToken}}
+
+### S0b. User biasa -> 403 "Forbidden"
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date={{runDate}}
+Authorization: Bearer {{userToken}}
+
+### S1. date 2027-01-11 -> tidak ada pesan, status Pending
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-11
+Authorization: Bearer {{adminToken}}
+
+### S2. date 2027-01-12 -> pesan Upcoming + link Snap, status Reminder1, ReminderCount 1
+# Jalankan lagi (S3) -> tidak ada pesan kedua
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-12
+Authorization: Bearer {{adminToken}}
+
+### S4a. date 2027-01-14 -> DueTomorrow (+Reminder2)
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-14
+Authorization: Bearer {{adminToken}}
+
+### S4b. date 2027-01-15 -> DueToday
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-15
+Authorization: Bearer {{adminToken}}
+
+### S4c. date 2027-01-18 -> pesan GracePeriod "masa tenggang berakhir 22 Jan 2027"
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-18
+Authorization: Bearer {{adminToken}}
+
+### S4d. date 2027-01-21 -> pesan GracePeriod "masa tenggang berakhir 22 Jan 2027"
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-21
+Authorization: Bearer {{adminToken}}
+
+### S5. date 2027-01-23 -> status Overdue, tidak ada pesan (mengasumsikan S4c dan S4d sudah dijalankan)
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-23
+Authorization: Bearer {{adminToken}}
+
+### S6. date 2027-01-24 -> pesan Overdue "terlambat 9 hari"
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-24
+Authorization: Bearer {{adminToken}}
+
+### S7. Premi baru, langsung date = H+10 (2027-01-25) -> satu pesan Overdue (catch-up), status langsung Overdue
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-25
+Authorization: Bearer {{adminToken}}
+
+### S8a. Pause pengingat premi (jalankan 2x: kedua -> 400 "Reminders are already paused.")
+POST {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/reminders/pause
+Authorization: Bearer {{adminToken}}
+
+### S8a-user. Pause oleh user biasa -> 403
+POST {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/reminders/pause
+Authorization: Bearer {{userToken}}
+
+### S8b. S8 dijalankan setelah S6/S7. date 2027-01-27 (slot berikutnya, D+12) saat pause -> tidak ada pesan
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-27
+Authorization: Bearer {{adminToken}}
+
+### S8c. Resume, lalu jalankan S8b lagi (date=2027-01-27) -> pesan Overdue "terlambat 12 hari"
+POST {{Chakra.API_HostAddress}}/api/premi/{{premiId}}/reminders/resume
+Authorization: Bearer {{adminToken}}
+
+### S9. date 2027-02-11 -> alert admin sekali; jalankan lagi -> tidak dobel
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-02-11
+Authorization: Bearer {{adminToken}}
+
+### S10-S11. Cicilan 1 dibayar lalu date = H-3 cicilan 2 (2027-02-12) -> pesan cicilan ke-2, link bisa dibayar
+# Cicilan 2 belum lunas, cicilan 3 lewat masa tenggang -> hanya cicilan 2 diingatkan, cicilan 3 Overdue tanpa pesan
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-02-12
+Authorization: Bearer {{adminToken}}
+
+### S13. Nasabah belum link Telegram, date = H-3 -> tidak ada transaksi baru di PaymentTransactions,
+# LastRemindedOn null, ringkasan skipped 1. Link Telegram lalu jalankan lagi -> pesan terkirim.
+# Butuh premi terpisah yang user-nya BELUM link Telegram.
+POST {{Chakra.API_HostAddress}}/api/jobs/daily-reminders/run?date=2027-01-12
+Authorization: Bearer {{adminToken}}
+
+# Reset manual untuk mengulang skenario (SQL, jalankan di database; sesuaikan WHERE):
+# UPDATE "Installments" SET "LastRemindedOn" = NULL, "OverdueAlertSentOn" = NULL, "ReminderCount" = 0, "Status" = 'Pending' WHERE ...;
+
+# S12 (worker): set Scheduler:RunAtLocalTime ke beberapa menit ke depan -> satu baris JobRuns Succeeded;
+#   restart API -> tidak jalan dua kali.
+#
+# S15 (mode menit, Development): di appsettings.Development.json isi
+#   "Scheduler": { "TimeScale": "Minutes", "SimulationStartDate": "2027-01-10" }
+#   premi jatuh tempo 15 Jan 2027, masa tenggang 7, lalu start API. 1 menit nyata = 1 hari simulasi:
+#   menit ke-2 Upcoming, ke-4 DueTomorrow, ke-5 DueToday, ke-8 dan ke-11 GracePeriod,
+#   ke-13 status Overdue, ke-14 pesan terlambat, ke-32 alert admin. Satu baris JobRuns per tanggal simulasi.
+#   Restart mengulang dari SimulationStartDate; tanggal yang sudah punya JobRun dilewati.
+#
+# S16 (guard Production): TimeScale "Minutes" dengan ASPNETCORE_ENVIRONMENT=Production
+#   -> API gagal start dengan pesan TimeScale
+#   ("Scheduler TimeScale 'Minutes' is only allowed in Development and requires SimulationStartDate.").

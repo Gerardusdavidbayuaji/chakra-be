@@ -18,7 +18,9 @@ builder.Services
     .AddApplicationSetup(builder.Configuration)
     .AddOpenApiSetup()
     .AddAuthSetup(builder.Configuration)
-    .AddNotificationSetup(builder.Configuration);
+    .AddNotificationSetup(builder.Configuration)
+    .AddMidtransSetup(builder.Configuration)
+    .AddSchedulerSetup(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
@@ -37,8 +39,13 @@ app.MapPremiEndpoints();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapTelegramEndpoints();
+app.MapMidtransEndpoints();
+app.MapPaymentEndpoints();
 
 if (app.Environment.IsDevelopment())
+{
     app.MapOutboxEndpoints();
+    app.MapJobEndpoints();
+}
 
 app.Run();
