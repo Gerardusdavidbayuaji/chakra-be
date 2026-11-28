@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Premi> Premis {get; set;}
     public DbSet<Installment> Installments {get; set;}
     public DbSet<OutboxMessage> OutboxMessages {get; set;}
+    public DbSet<PaymentTransaction> PaymentTransactions {get; set;}
+    public DbSet<JobRun> JobRuns {get; set;}
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -25,6 +27,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         configurationBuilder.Properties<PremiId>().HaveConversion<PremiIdConverter>();
         configurationBuilder.Properties<InstallmentId>().HaveConversion<InstallmentIdConverter>();
         configurationBuilder.Properties<OutboxMessageId>().HaveConversion<OutboxMessageIdConverter>();
+        configurationBuilder.Properties<PaymentTransactionId>().HaveConversion<PaymentTransactionIdConverter>();
+        configurationBuilder.Properties<JobRunId>().HaveConversion<JobRunIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
