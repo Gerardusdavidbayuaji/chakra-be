@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Chakra.Application.Features.Users.Queries;
 
-public record GetUsersQuery : IRequest<Result<List<UserResponseDto>>>;
+// Admin saja: berisi email dan chat id Telegram semua user
+public record GetUsersQuery : IAdminRequest<Result<List<UserResponseDto>>>;
 
 public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<List<UserResponseDto>>>
 {
