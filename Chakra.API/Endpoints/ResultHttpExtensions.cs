@@ -9,6 +9,7 @@ public static class ResultHttpExtensions
     {
         ErrorType.Unauthorized => Results.Json(ApiErrorResponse.Error(result.Error!, 401), statusCode: 401),
         ErrorType.Forbidden => Results.Json(ApiErrorResponse.Error(result.Error!, 403), statusCode: 403),
+        ErrorType.Unavailable => Results.Json(ApiErrorResponse.Error(result.Error!, 503), statusCode: 503),
         ErrorType.NotFound => Results.NotFound(ApiErrorResponse.Error(result.Error!, 404)),
         _ => result.Errors != null
             ? Results.BadRequest(ApiErrorResponse.Validation(result.Error!, result.Errors, 400))
