@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Chakra.Application.Common;
-using Chakra.Application.Features.Telegram.Command;
 using Chakra.Application.Features.Telegram.Dtos;
+using Chakra.Application.Features.Telegram.Commands.CreateTelegramLink;
+using Chakra.Application.Features.Telegram.Commands.ProcessTelegramWebhook;
 
 namespace Chakra.API.Endpoints;
 

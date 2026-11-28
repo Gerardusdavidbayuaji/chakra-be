@@ -1,7 +1,7 @@
 using MediatR;
 
-using Chakra.Application.Features.Midtrans.Command;
 using Chakra.Application.Features.Midtrans.Dtos;
+using Chakra.Application.Features.Midtrans.Commands.ProcessMidtransNotification;
 
 namespace Chakra.API.Endpoints;
 

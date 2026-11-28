@@ -1,6 +1,6 @@
 using Chakra.Application.Common;
-using Chakra.Application.Features.Users.Queries;
 using MediatR;
+using Chakra.Application.Features.Users.Queries.GetUsers;
 
 namespace Chakra.API.Endpoints;
 
