@@ -489,5 +489,5 @@ $RECYCLE.BIN/
 .idea/
 .vs/
 *.user
-.envd o c s / s u p e r p o w e r s /  
- 
+.env
+docs/superpowers/
