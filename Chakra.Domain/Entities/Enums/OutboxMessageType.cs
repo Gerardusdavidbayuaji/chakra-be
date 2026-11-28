@@ -5,5 +5,6 @@ public enum OutboxMessageType
     TelegramReminder,
     PaymentSuccess,
     TelegramLinked,
-    Test
+    Test,
+    AdminAlert
 }

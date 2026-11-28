@@ -24,3 +24,15 @@ public readonly record struct OutboxMessageId(Guid Value)
     public override string ToString() => Value.ToString();
 }
 
+
+public readonly record struct PaymentTransactionId(Guid Value)
+{
+    public static PaymentTransactionId New() => new(Guid.CreateVersion7());
+    public override string ToString() => Value.ToString();
+}
+
+public readonly record struct JobRunId(Guid Value)
+{
+    public static JobRunId New() => new(Guid.CreateVersion7());
+    public override string ToString() => Value.ToString();
+}
