@@ -30,3 +30,17 @@ public sealed class OutboxMessageIdConverter : ValueConverter<OutboxMessageId, G
     {
     }
 }
+
+public sealed class PaymentTransactionIdConverter : ValueConverter<PaymentTransactionId, Guid>
+{
+    public PaymentTransactionIdConverter() : base(id => id.Value, value => new PaymentTransactionId(value))
+    {
+    }
+}
+
+public sealed class JobRunIdConverter : ValueConverter<JobRunId, Guid>
+{
+    public JobRunIdConverter() : base(id => id.Value, value => new JobRunId(value))
+    {
+    }
+}
