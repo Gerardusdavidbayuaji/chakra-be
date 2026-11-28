@@ -17,7 +17,7 @@ namespace Chakra.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.20")
+                .HasAnnotation("ProductVersion", "9.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -41,9 +41,15 @@ namespace Chakra.Infrastructure.Migrations
                     b.Property<int>("InstallmentNumber")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly?>("LastRemindedOn")
+                        .HasColumnType("date");
+
                     b.Property<string>("MidtransOrderId")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
+
+                    b.Property<DateOnly?>("OverdueAlertSentOn")
+                        .HasColumnType("date");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
@@ -83,7 +89,79 @@ namespace Chakra.Infrastructure.Migrations
                     b.HasIndex("PremiId", "InstallmentNumber")
                         .IsUnique();
 
+                    b.HasIndex("Status", "DueDate");
+
                     b.ToTable("Installments", (string)null);
+                });
+
+            modelBuilder.Entity("Chakra.Domain.Entities.JobRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AdminAlertsQueued")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("BusinessDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("Failures")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("JobName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("PremisProcessed")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RemindersQueued")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("Skipped")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobName", "BusinessDate")
+                        .IsUnique();
+
+                    b.ToTable("JobRuns", (string)null);
                 });
 
             modelBuilder.Entity("Chakra.Domain.Entities.OutboxMessage", b =>
@@ -131,6 +209,111 @@ namespace Chakra.Infrastructure.Migrations
                     b.ToTable("OutboxMessages", (string)null);
                 });
 
+            modelBuilder.Entity("Chakra.Domain.Entities.PaymentTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AllocatedInstallmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("ExpireRequested")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InstallmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MidtransTransactionId")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PaymentType")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<Guid>("PremiId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("RefundReference")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ResolutionNote")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SnapToken")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AllocatedInstallmentId");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasFilter("\"Status\" = 'Pending'");
+
+                    b.HasIndex("InstallmentId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Pending'");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("PremiId", "Status");
+
+                    b.ToTable("PaymentTransactions", (string)null);
+                });
+
             modelBuilder.Entity("Chakra.Domain.Entities.Premi", b =>
                 {
                     b.Property<Guid>("Id")
@@ -147,6 +330,17 @@ namespace Chakra.Infrastructure.Migrations
 
                     b.Property<decimal>("InstallmentAmount")
                         .HasColumnType("numeric");
+
+                    b.Property<bool>("RemindersPaused")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("RemindersPausedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RemindersPausedByUserId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
@@ -167,6 +361,8 @@ namespace Chakra.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RemindersPausedByUserId");
 
                     b.HasIndex("UserId");
 
@@ -241,8 +437,33 @@ namespace Chakra.Infrastructure.Migrations
                     b.Navigation("Premi");
                 });
 
+            modelBuilder.Entity("Chakra.Domain.Entities.PaymentTransaction", b =>
+                {
+                    b.HasOne("Chakra.Domain.Entities.Installment", null)
+                        .WithMany()
+                        .HasForeignKey("AllocatedInstallmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Chakra.Domain.Entities.Installment", null)
+                        .WithMany()
+                        .HasForeignKey("InstallmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Chakra.Domain.Entities.Premi", null)
+                        .WithMany()
+                        .HasForeignKey("PremiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Chakra.Domain.Entities.Premi", b =>
                 {
+                    b.HasOne("Chakra.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("RemindersPausedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Chakra.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
