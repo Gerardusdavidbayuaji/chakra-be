@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using Chakra.Application.Features.Midtrans;
+using Chakra.Application.Features.Midtrans.Helpers;
 
 namespace Chakra.UnitTests.MidtransSignatureChecks;
 

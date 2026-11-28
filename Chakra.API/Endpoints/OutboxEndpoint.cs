@@ -1,7 +1,7 @@
 using MediatR;
 
 using Chakra.Application.Common;
-using Chakra.Application.Features.Outbox.Command;
+using Chakra.Application.Features.Outbox.Commands.EnqueueTestOutboxMessage;
 
 namespace Chakra.API.Endpoints;
 

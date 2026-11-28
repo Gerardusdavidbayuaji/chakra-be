@@ -1,8 +1,9 @@
 using Chakra.Application.Common;
-using Chakra.Application.Features.Installments.Command;
-using Chakra.Application.Features.Installments.Queries;
-using Chakra.Application.Features.Payments.Command;
 using MediatR;
+using Chakra.Application.Features.Installments.Commands.PayInstallment;
+using Chakra.Application.Features.Installments.Queries.GetAllInstallmentByPremiId;
+using Chakra.Application.Features.Installments.Queries.GetInstallmentById;
+using Chakra.Application.Features.Payments.Commands.CreatePaymentLink;
 
 namespace Chakra.API.Endpoints;
 

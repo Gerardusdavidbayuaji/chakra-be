@@ -1,9 +1,10 @@
 using MediatR;
 
 using Chakra.Application.Common;
-using Chakra.Application.Features.Payments.Command;
 using Chakra.Application.Features.Payments.Dtos;
-using Chakra.Application.Features.Payments.Queries;
+using Chakra.Application.Features.Payments.Commands.AllocatePayment;
+using Chakra.Application.Features.Payments.Commands.RefundPayment;
+using Chakra.Application.Features.Payments.Queries.GetUnappliedPayments;
 
 namespace Chakra.API.Endpoints;
 
@@ -23,7 +24,7 @@ public static class PaymentEndpoint
             })
             .WithName("Get Unapplied Payments");
 
-        group.MapPost("/{id:guid}/allocate", async (Guid id, AllocatePaymentRequest? body, IMediator mediator) =>
+        group.MapPost("/{id:guid}/allocate", async (Guid id, AllocatePaymentRequestDto? body, IMediator mediator) =>
             {
                 var result = await mediator.Send(new AllocatePaymentCommand(id, body?.Note));
                 return result.IsSuccess
@@ -32,7 +33,7 @@ public static class PaymentEndpoint
             })
             .WithName("Allocate Payment");
 
-        group.MapPost("/{id:guid}/refund", async (Guid id, RefundPaymentRequest body, IMediator mediator) =>
+        group.MapPost("/{id:guid}/refund", async (Guid id, RefundPaymentRequestDto body, IMediator mediator) =>
             {
                 var result = await mediator.Send(new RefundPaymentCommand(id, body.Reference, body.Note));
                 return result.IsSuccess

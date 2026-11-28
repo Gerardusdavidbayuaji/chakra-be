@@ -10,18 +10,3 @@ public class TelegramUpdateDto
     [JsonPropertyName("message")]
     public TelegramMessageDto? Message { get; set; }
 }
-
-public class TelegramMessageDto
-{
-    [JsonPropertyName("text")]
-    public string? Text { get; set; }
-
-    [JsonPropertyName("chat")]
-    public TelegramChatDto? Chat { get; set; }
-}
-
-public class TelegramChatDto
-{
-    [JsonPropertyName("id")]
-    public long Id { get; set; }
-}

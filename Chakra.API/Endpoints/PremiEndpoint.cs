@@ -1,9 +1,14 @@
 using MediatR;
 
-using Chakra.Application.Features.Premi.Command;
-using Chakra.Application.Features.Premi.Queries;
 using Chakra.Application.Features.Premi.Dtos;
 using Chakra.Application.Common;
+using Chakra.Application.Features.Premi.Commands.CancelPremi;
+using Chakra.Application.Features.Premi.Commands.CreatePremi;
+using Chakra.Application.Features.Premi.Commands.PauseReminders;
+using Chakra.Application.Features.Premi.Commands.ResumeReminders;
+using Chakra.Application.Features.Premi.Commands.UpdatePremi;
+using Chakra.Application.Features.Premi.Queries.GetAllPremi;
+using Chakra.Application.Features.Premi.Queries.GetPremiById;
 
 namespace Chakra.API.Endpoints;
 
@@ -33,7 +38,7 @@ public static class PremiEndpoint
 
         group.MapPost("/", async (CreatePremiRequestDto dto, IMediator mediator) =>
         {
-            var request = new CreatePremiInput
+            var request = new CreatePremiCommand
             {
                 UserId = dto.UserId,
                 TotalAmount = dto.TotalAmount,
@@ -55,7 +60,7 @@ public static class PremiEndpoint
 
         group.MapPut("/{id:guid}", async (Guid id, UpdatePremiRequestDto dto, IMediator mediator) =>
         {
-            var request = new UpdatePremiInput
+            var request = new UpdatePremiCommand
             {
                 Id = id,
                 TotalAmount = dto.TotalAmount,
@@ -74,7 +79,7 @@ public static class PremiEndpoint
 
         group.MapPatch("/{id:guid}/cancel", async (Guid id, IMediator mediator) =>
         {
-            var result = await mediator.Send(new CancelPremiRequest(id));
+            var result = await mediator.Send(new CancelPremiCommand(id));
             return result.IsSuccess
                 ? Results.Ok(ApiResponse<object>.Success(result.Data!, 200, "Premi cancelled successfully"))
                 : result.ToErrorResult();
