@@ -1,12 +1,13 @@
 namespace Chakra.Application.Common;
 
-// Dipakai endpoint untuk memilih HTTP status: Failure 400, NotFound 404, Unauthorized 401, Forbidden 403
+// Dipakai endpoint untuk memilih HTTP status: Failure 400, NotFound 404, Unauthorized 401, Forbidden 403, Unavailable 503
 public enum ErrorType
 {
     Failure,
     NotFound,
     Unauthorized,
-    Forbidden
+    Forbidden,
+    Unavailable
 }
 
 public class Result<T>
@@ -22,6 +23,7 @@ public class Result<T>
     public static Result<T> NotFound(string error) => new() { IsSuccess = false, Error = error, ErrorType = ErrorType.NotFound };
     public static Result<T> Unauthorized(string error) => new() { IsSuccess = false, Error = error, ErrorType = ErrorType.Unauthorized };
     public static Result<T> Forbidden(string error) => new() { IsSuccess = false, Error = error, ErrorType = ErrorType.Forbidden };
+    public static Result<T> Unavailable(string error) => new() { IsSuccess = false, Error = error, ErrorType = ErrorType.Unavailable };
     public static Result<T> ValidationFailure(List<ValidationError> errors) => new()
     {
         IsSuccess = false,
